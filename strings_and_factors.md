@@ -185,3 +185,129 @@ data_marj %>%
 ```
 
 ![](strings_and_factors_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+# Restaurant inspections
+
+``` r
+data("rest_inspec")
+
+rest_inspec %>% 
+  group_by(boro, grade) %>% 
+  summarize(n = n()) %>% 
+  pivot_wider(names_from = grade, values_from = n)
+```
+
+    ## `summarise()` has grouped output by 'boro'. You can override using the `.groups` argument.
+
+    ## # A tibble: 6 × 8
+    ## # Groups:   boro [6]
+    ##   boro              A     B     C `Not Yet Graded`     P     Z  `NA`
+    ##   <chr>         <int> <int> <int>            <int> <int> <int> <int>
+    ## 1 BRONX         13688  2801   701              200   163   351 16833
+    ## 2 BROOKLYN      37449  6651  1684              702   416   977 51930
+    ## 3 MANHATTAN     61608 10532  2689              765   508  1237 80615
+    ## 4 Missing           4    NA    NA               NA    NA    NA    13
+    ## 5 QUEENS        35952  6492  1593              604   331   913 45816
+    ## 6 STATEN ISLAND  5215   933   207               85    47   149  6730
+
+Focusing only on pizza places for now
+
+``` r
+rest_inspec %>% 
+  filter(str_detect(dba, "Pizza")) %>% 
+  group_by(boro, grade) %>% 
+  summarize(n = n()) %>% 
+  pivot_wider(names_from = grade, values_from = n)
+```
+
+    ## `summarise()` has grouped output by 'boro'. You can override using the `.groups` argument.
+
+    ## # A tibble: 5 × 6
+    ## # Groups:   boro [5]
+    ##   boro              A     B  `NA` `Not Yet Graded`     Z
+    ##   <chr>         <int> <int> <int>            <int> <int>
+    ## 1 BRONX             9     3     7               NA    NA
+    ## 2 BROOKLYN          6    NA     8                9    NA
+    ## 3 MANHATTAN        26     8    36               NA    NA
+    ## 4 QUEENS           17    NA    20               NA     4
+    ## 5 STATEN ISLAND     5    NA    13               NA    NA
+
+``` r
+rest_inspec %>% 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) %>% 
+  group_by(boro, grade) %>% 
+  summarize(n = n()) %>% 
+  pivot_wider(names_from = grade, values_from = n)
+```
+
+    ## `summarise()` has grouped output by 'boro'. You can override using the `.groups` argument.
+
+    ## # A tibble: 5 × 8
+    ## # Groups:   boro [5]
+    ##   boro              A     B     C `Not Yet Graded`     P     Z  `NA`
+    ##   <chr>         <int> <int> <int>            <int> <int> <int> <int>
+    ## 1 BRONX          1170   305    56                4    25     9  1522
+    ## 2 BROOKLYN       1948   296    61               30    19    51  2572
+    ## 3 MANHATTAN      1983   420    76               12    23    54  2924
+    ## 4 QUEENS         1647   259    48               27    21    49  1973
+    ## 5 STATEN ISLAND   323   127    21                2     5    22   633
+
+``` r
+rest_inspec %>% 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) %>%
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar() 
+```
+
+![](strings_and_factors_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+
+``` r
+rest_inspec %>% 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) %>%
+  mutate(boro = fct_infreq(boro)) %>%
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar() 
+```
+
+![](strings_and_factors_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+
+``` r
+rest_inspec %>% 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) %>%
+  mutate(
+    boro = fct_infreq(boro),
+    boro = str_replace(boro, "Manhattan", "The City")) %>%
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar() 
+```
+
+![](strings_and_factors_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+
+``` r
+rest_inspec %>% 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) %>%
+  mutate(
+    boro = fct_infreq(boro),
+    boro = replace(boro, which(boro == "Manhattan"), "The City")) %>%
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar()
+```
+
+    ## Warning in `[<-.factor`(`*tmp*`, list, value = "The City"): invalid factor
+    ## level, NA generated
+
+![](strings_and_factors_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+
+``` r
+rest_inspec %>% 
+  filter(str_detect(dba, regex("pizza", ignore_case = TRUE))) %>%
+  mutate(
+    boro = fct_infreq(boro),
+    boro = fct_recode(boro, "The City" = "Manhattan")) %>%
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar()
+```
+
+    ## Warning: Unknown levels in `f`: Manhattan
+
+![](strings_and_factors_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
